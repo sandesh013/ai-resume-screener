@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Analysis History - Resume Match Analyzer{% endblock %}
+{% block body_class %}history-page{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <section class="page-hero page-hero-compact">
+        <div class="page-hero-copy">
+            <span class="eyebrow">Analysis archive</span>
+            <h1>Review how your resume changed across applications.</h1>
+            <p>
+                Use the history view to revisit older analyses, compare roles, and spot whether recent edits
+                are improving fit and ATS quality.
+            </p>
+        </div>
+        <div class="page-hero-side panel-card">
+            <span class="metric-chip">Stored runs</span>
+            <h3>{{ analyses|length }} total analyses</h3>
+            <p>Every run keeps the score, ATS feedback, and role context together so you can reopen it later.</p>
+            <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">Run New Analysis</a>
+        </div>
+    </section>
+
+    {% if analyses %}
+    <div class="panel-card">
+        <div class="panel-head table-head">
+            <div>
+                <span class="metric-chip">Saved results</span>
+                <h3>All analysis runs</h3>
+            </div>
+        </div>
+
+        <div class="table-responsive table-dark-custom">
+            <table class="table analysis-table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Resume</th>
+                        <th>Role</th>
+                        <th>Company</th>
+                        <th>Compatibility</th>
+                        <th>ATS</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in analyses %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ a.resume.filename|truncate(30) }}</td>
+                        <td>{{ a.job_description.title|truncate(32) }}</td>
+                        <td class="table-subtext">{{ a.job_description.company or 'Not provided' }}</td>
+                        <td>
+                            <span class="score-pill {% if a.compatibility_score >= 70 %}pill-good{% elif a.compatibility_score >= 40 %}pill-mid{% else %}pill-low{% endif %}">
+                                {{ a.compatibility_score }}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score-pill {% if a.ats_score and a.ats_score >= 70 %}pill-good{% elif a.ats_score and a.ats_score >= 40 %}pill-mid{% else %}pill-low{% endif %}">
+                                {{ a.ats_score or 'N/A' }}{% if a.ats_score %}%{% endif %}
+                            </span>
+                        </td>
+                        <td class="table-subtext">{{ a.analyzed_at.strftime('%d %b %Y, %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('results', analysis_id=a.id) }}" class="btn btn-gradient-primary btn-sm">Open</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="panel-card empty-state">
+        <i class="bi bi-journal-x"></i>
+        <h4>No analysis history yet</h4>
+        <p>Your completed runs will appear here once you analyze a resume against a target role.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">Create First Analysis</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

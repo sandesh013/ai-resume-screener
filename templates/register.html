@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Register - Resume Match Analyzer{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="auth-shell">
+        <div class="row g-0">
+            <div class="col-lg-6">
+                <div class="auth-showcase">
+                    <span class="eyebrow">Create your workspace</span>
+                    <h1>Build a calmer, sharper resume review flow.</h1>
+                    <p>
+                        Resume Match Analyzer helps you see role fit clearly, understand gaps quickly, and make updates that feel intentional.
+                    </p>
+
+                    <div class="auth-feature-list">
+                        <div class="auth-feature-item">
+                            <i class="bi bi-stars"></i>
+                            <div>
+                                <strong>Fast resume-to-role comparisons</strong>
+                                <p>Upload a resume and a target listing to generate a practical fit report in one place.</p>
+                            </div>
+                        </div>
+                        <div class="auth-feature-item">
+                            <i class="bi bi-diagram-3"></i>
+                            <div>
+                                <strong>Visible skill gaps</strong>
+                                <p>Understand what the role wants and how closely your current resume reflects it.</p>
+                            </div>
+                        </div>
+                        <div class="auth-feature-item">
+                            <i class="bi bi-shield-check"></i>
+                            <div>
+                                <strong>ATS-aware improvement tips</strong>
+                                <p>Keep your resume readable for recruiters and screening systems at the same time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="auth-card">
+                    <span class="metric-chip">New account</span>
+                    <h2>Create your Resume Match Analyzer account</h2>
+                    <p class="auth-card-copy">A few details are all you need to start analyzing resumes.</p>
+
+                    <form method="POST" id="registerForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full name</label>
+                            <input type="text" class="form-control" name="full_name" placeholder="John Doe" autocomplete="name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" placeholder="johndoe" required autocomplete="username">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" id="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Confirm password</label>
+                            <input type="password" class="form-control" name="confirm_password" id="confirm_password" placeholder="Repeat password" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-gradient-primary w-100 py-3">
+                            <i class="bi bi-person-plus"></i>
+                            Create Account
+                        </button>
+                    </form>
+
+                    <p class="auth-footer-text">Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

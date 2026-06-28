@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}New Analysis - Resume Match Analyzer{% endblock %}
+{% block body_class %}upload-page{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <section class="page-hero page-hero-compact">
+        <div class="page-hero-copy">
+            <span class="eyebrow">New resume review</span>
+            <h1>Upload once, compare fast, and walk away with specific improvements.</h1>
+            <p>
+                Add your resume, paste the target job description, and Resume Match Analyzer will score the fit,
+                highlight missing skills, and check ATS readiness in one run.
+            </p>
+        </div>
+        <div class="page-hero-side panel-card">
+            <span class="metric-chip">What gets reviewed</span>
+            <div class="insight-list tight-list">
+                <div class="insight-item">
+                    <i class="bi bi-bullseye"></i>
+                    <div><strong>Role fit</strong><p>TF-IDF similarity plus skill coverage.</p></div>
+                </div>
+                <div class="insight-item">
+                    <i class="bi bi-diagram-3"></i>
+                    <div><strong>Skill gaps</strong><p>Matched, missing, and supporting skills.</p></div>
+                </div>
+                <div class="insight-item">
+                    <i class="bi bi-shield-check"></i>
+                    <div><strong>ATS readiness</strong><p>Formatting and keyword checks that are easy to act on.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="row g-4">
+            <div class="col-xl-7">
+                <div class="panel-card form-panel h-100">
+                    <div class="panel-head">
+                        <div>
+                            <span class="metric-chip">Resume file</span>
+                            <h3>Upload your resume</h3>
+                        </div>
+                        <p>Accepted formats: PDF, DOC, or DOCX up to 16 MB.</p>
+                    </div>
+
+                    <label class="upload-zone" for="resumeFile">
+                        <input type="file" class="d-none" id="resumeFile" name="resume" accept=".pdf,.doc,.docx">
+                        <span class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></span>
+                        <strong>Drop your resume here or click to browse</strong>
+                        <span>Choose the version you want to compare against this role.</span>
+                    </label>
+
+                    <div id="fileInfo" class="mt-3"></div>
+
+                    <div class="helper-list">
+                        <div class="helper-item">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Use the same file you would actually submit to recruiters.</span>
+                        </div>
+                        <div class="helper-item">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Recent, role-specific versions usually produce more useful suggestions.</span>
+                        </div>
+                        <div class="helper-item">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Keep contact details and section headings visible for stronger ATS parsing.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="panel-card form-panel h-100">
+                    <div class="panel-head">
+                        <div>
+                            <span class="metric-chip">Target role</span>
+                            <h3>Add the job description</h3>
+                        </div>
+                        <p>Paste the listing text or upload the JD file. Either path works.</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Job title</label>
+                        <input type="text" class="form-control" name="jd_title" placeholder="Senior Python Developer">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Company</label>
+                        <input type="text" class="form-control" name="jd_company" placeholder="Company name (optional)">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Paste job description</label>
+                        <textarea class="form-control" name="jd_text" id="jdText" rows="8" placeholder="Paste the full role description here..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Or upload a JD file</label>
+                        <input type="file" class="form-control" name="jd_file" id="jdFile" accept=".pdf,.doc,.docx">
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient-primary btn-lg w-100" id="submitBtn">
+                        <i class="bi bi-stars"></i>
+                        Analyze Resume
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Resume Match Analyzer - Intelligent Resume Screening System{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<section class="hero-band">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="eyebrow">Resume strategy with signal, not guesswork</span>
+                <h1 class="hero-title gradient-text">Turn every resume into a stronger match before you hit apply.</h1>
+                <p class="hero-copy">
+                    Resume Match Analyzer compares your resume against a target role, explains the score, spots missing skills,
+                    and gives you clear fixes for ATS readiness and relevance.
+                </p>
+
+                <div class="hero-actions">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary btn-lg">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        Start New Analysis
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg">Open Dashboard</a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-gradient-primary btn-lg">
+                        <i class="bi bi-rocket-takeoff"></i>
+                        Create Free Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+                    {% endif %}
+                </div>
+
+                <div class="hero-stat-grid">
+                    <div class="mini-stat">
+                        <span class="mini-stat-value">2 min</span>
+                        <span class="mini-stat-label">Average review flow</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-value">3 views</span>
+                        <span class="mini-stat-label">Match score, ATS, and gaps</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-value">Actionable</span>
+                        <span class="mini-stat-label">Recommendations you can use right away</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="hero-showcase panel-card">
+                    <div class="showcase-header">
+                        <div>
+                            <span class="metric-chip">Live analysis preview</span>
+                            <h2>Senior Python Developer</h2>
+                        </div>
+                        <span class="showcase-meta">Target role</span>
+                    </div>
+
+                    <div class="showcase-metrics">
+                        <div class="showcase-stat">
+                            <span class="showcase-value">84%</span>
+                            <span class="showcase-label">Compatibility</span>
+                        </div>
+                        <div class="showcase-stat">
+                            <span class="showcase-value">78%</span>
+                            <span class="showcase-label">ATS readiness</span>
+                        </div>
+                        <div class="showcase-stat">
+                            <span class="showcase-value">5</span>
+                            <span class="showcase-label">Priority gaps</span>
+                        </div>
+                    </div>
+
+                    <div class="showcase-split">
+                        <div>
+                            <h6>Aligned skills</h6>
+                            <div class="showcase-tags">
+                                <span class="skill-tag matched">Python</span>
+                                <span class="skill-tag matched">Flask</span>
+                                <span class="skill-tag matched">REST APIs</span>
+                                <span class="skill-tag matched">SQL</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h6>High-value gaps</h6>
+                            <div class="showcase-tags">
+                                <span class="skill-tag missing">Docker</span>
+                                <span class="skill-tag missing">AWS</span>
+                                <span class="skill-tag missing">CI/CD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="showcase-note">
+                        Recruiter-facing feedback stays practical: stronger keywords, clearer project framing, and a cleaner structure for ATS parsing.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="metric-strip">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span class="metric-chip">Scoring</span>
+                    <h3>Hybrid fit calculation</h3>
+                    <p>Balances TF-IDF similarity with skill overlap so the score feels grounded, not random.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span class="metric-chip">Gap Analysis</span>
+                    <h3>Missing skills called out clearly</h3>
+                    <p>See what is already covered, what is absent, and which skills deserve attention first.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span class="metric-chip">Readiness</span>
+                    <h3>ATS feedback that is easy to act on</h3>
+                    <p>Formatting, keywords, and structural signals are surfaced without burying you in noise.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space" id="how-it-works">
+    <div class="container">
+        <div class="section-heading text-center">
+            <span class="eyebrow">How it works</span>
+            <h2>Four steps from upload to clarity</h2>
+            <p>The flow stays fast, but the feedback goes deep where it matters.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card workflow-step">
+                    <div class="feature-icon icon-teal"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                    <span class="step-chip">Step 1</span>
+                    <h5>Upload your resume</h5>
+                    <p>Add a PDF or DOCX so Resume Match Analyzer can extract the content and prepare it for analysis.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card workflow-step">
+                    <div class="feature-icon icon-coral"><i class="bi bi-briefcase"></i></div>
+                    <span class="step-chip">Step 2</span>
+                    <h5>Add the target role</h5>
+                    <p>Paste the job description or upload it directly with an optional title and company name.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card workflow-step">
+                    <div class="feature-icon icon-gold"><i class="bi bi-bar-chart-line"></i></div>
+                    <span class="step-chip">Step 3</span>
+                    <h5>Review the fit score</h5>
+                    <p>See compatibility, ATS readiness, and the score breakdown in one place.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card workflow-step">
+                    <div class="feature-icon icon-slate"><i class="bi bi-lightbulb"></i></div>
+                    <span class="step-chip">Step 4</span>
+                    <h5>Improve what matters</h5>
+                    <p>Use the recommendations, learning roadmap, and gap list to tighten the next version.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space section-muted">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-5">
+                <div class="editorial-panel h-100">
+                    <span class="eyebrow">What you get</span>
+                    <h2>A focused review workspace for every application.</h2>
+                    <p>
+                        The interface is built to help you understand the story behind the score, not just read a number.
+                        It keeps matched skills, missing skills, ATS checks, and recommendations in one reviewable flow.
+                    </p>
+                    <a href="{% if current_user.is_authenticated %}{{ url_for('upload') }}{% else %}{{ url_for('register') }}{% endif %}" class="btn btn-gradient-primary">
+                        {% if current_user.is_authenticated %}Analyze Another Resume{% else %}Try Resume Match Analyzer{% endif %}
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="feature-card h-100">
+                            <div class="feature-icon icon-teal"><i class="bi bi-check2-circle"></i></div>
+                            <h5>Clear skill mapping</h5>
+                            <p>Separate technical, soft-skill, and certification overlap so strengths and gaps are easy to scan.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-card h-100">
+                            <div class="feature-icon icon-coral"><i class="bi bi-compass"></i></div>
+                            <h5>Practical roadmap</h5>
+                            <p>Learning steps and course suggestions turn a weak match into an improvement plan.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-card h-100">
+                            <div class="feature-icon icon-gold"><i class="bi bi-graph-up-arrow"></i></div>
+                            <h5>Progress visibility</h5>
+                            <p>Dashboards and history make it easier to track whether your resume is actually improving.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-card h-100">
+                            <div class="feature-icon icon-slate"><i class="bi bi-shield-check"></i></div>
+                            <h5>ATS-first polish</h5>
+                            <p>Formatting and keyword feedback helps your resume stay machine-readable without feeling robotic.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space">
+    <div class="container">
+        <div class="cta-band">
+            <div>
+                <span class="eyebrow">Ready to sharpen your next application?</span>
+                <h2>Make the role fit visible before a recruiter ever sees the resume.</h2>
+            </div>
+            <div class="hero-actions">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">Run New Analysis</a>
+                <a href="{{ url_for('history') }}" class="btn btn-outline-light">Review History</a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-gradient-primary">Create Account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% block title %}Analysis Results - Resume Match Analyzer{% endblock %}
+{% block body_class %}results-page{% endblock %}
+
+{% set matched_total = (matched_skills.get('technical_skills', [])|length) + (matched_skills.get('soft_skills', [])|length) + (matched_skills.get('certifications', [])|length) %}
+{% set missing_total = (missing_skills.get('technical_skills', [])|length) + (missing_skills.get('soft_skills', [])|length) + (missing_skills.get('certifications', [])|length) %}
+{% set resume_total = (resume_skills.get('technical_skills', [])|length) + (resume_skills.get('soft_skills', [])|length) + (resume_skills.get('certifications', [])|length) %}
+
+{% block content %}
+<div class="container py-5">
+    <section class="page-hero page-hero-compact">
+        <div class="page-hero-copy">
+            <span class="eyebrow">Analysis report</span>
+            <h1>{{ analysis.job_description.title }}</h1>
+            <p>
+                {% if analysis.job_description.company %}
+                Prepared against <strong>{{ analysis.job_description.company }}</strong>
+                {% else %}
+                Prepared for your selected target role
+                {% endif %}
+                on {{ analysis.analyzed_at.strftime('%d %b %Y, %H:%M') }} using {{ analysis.resume.filename }}.
+            </p>
+        </div>
+        <div class="hero-actions no-print">
+            <button class="btn btn-outline-light" id="printResults">
+                <i class="bi bi-printer"></i>
+                Print Report
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Dashboard</a>
+            <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">New Analysis</a>
+        </div>
+    </section>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="panel-card score-panel spotlight-panel h-100">
+                <div class="panel-head">
+                    <div>
+                        <span class="metric-chip">Compatibility</span>
+                        <h3>Overall match score</h3>
+                    </div>
+                </div>
+
+                <div class="score-circle-container">
+                    <div class="score-circle {% if analysis.compatibility_score >= 70 %}score-high{% elif analysis.compatibility_score >= 40 %}score-medium{% else %}score-low{% endif %}" data-score="{{ analysis.compatibility_score }}">
+                        <svg viewBox="0 0 120 120">
+                            <circle class="progress-ring-bg" cx="60" cy="60" r="54"></circle>
+                            <circle class="progress-ring-circle" cx="60" cy="60" r="54"></circle>
+                        </svg>
+                        <span class="score-text">0%</span>
+                    </div>
+                </div>
+
+                <p class="spotlight-copy">
+                    {% if analysis.compatibility_score >= 70 %}
+                    Strong alignment. The resume already reflects much of what this role is asking for.
+                    {% elif analysis.compatibility_score >= 40 %}
+                    There is real potential here, but a few missing signals are holding the score back.
+                    {% else %}
+                    The role and resume are still some distance apart. Focus on high-signal gaps first.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-card h-100">
+                <div class="panel-head">
+                    <div>
+                        <span class="metric-chip">Breakdown</span>
+                        <h3>Where the score comes from</h3>
+                    </div>
+                    <p>Resume Match Analyzer combines semantic similarity with direct skill overlap.</p>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-row-head">
+                        <span>TF-IDF similarity</span>
+                        <strong>{{ score_breakdown.get('tfidf_score', 0) }}%</strong>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-bar-fill {% if score_breakdown.get('tfidf_score', 0) >= 70 %}high{% elif score_breakdown.get('tfidf_score', 0) >= 40 %}medium{% else %}low{% endif %}" data-width="{{ score_breakdown.get('tfidf_score', 0) }}"></div>
+                    </div>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-row-head">
+                        <span>Skill match</span>
+                        <strong>{{ score_breakdown.get('skill_score', 0) }}%</strong>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-bar-fill {% if score_breakdown.get('skill_score', 0) >= 70 %}high{% elif score_breakdown.get('skill_score', 0) >= 40 %}medium{% else %}low{% endif %}" data-width="{{ score_breakdown.get('skill_score', 0) }}"></div>
+                    </div>
+                </div>
+
+                <div class="formula-note">
+                    Weighted formula: 60% semantic similarity and 40% direct skill overlap.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-card h-100">
+                <div class="panel-head">
+                    <div>
+                        <span class="metric-chip">ATS</span>
+                        <h3>ATS readiness</h3>
+                    </div>
+                </div>
+
+                <div class="ats-chart-wrap">
+                    <canvas id="atsChart" data-score="{{ ats_feedback.get('score', 0) }}"></canvas>
+                    <div class="ats-chart-center">
+                        <span class="ats-score {% if ats_feedback.get('score', 0) >= 70 %}text-success{% elif ats_feedback.get('score', 0) >= 40 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ ats_feedback.get('score', 0) }}%
+                        </span>
+                    </div>
+                </div>
+
+                <p class="spotlight-copy">
+                    {% if ats_feedback.get('score', 0) >= 70 %}
+                    ATS parsing looks solid. Keep the formatting disciplined as you revise content.
+                    {% elif ats_feedback.get('score', 0) >= 40 %}
+                    The resume is partly ATS-friendly, but there are a few structure or keyword issues to clean up.
+                    {% else %}
+                    ATS compatibility needs work. Fix headings, formatting, and role language before resubmitting.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="snapshot-grid mb-4">
+        <div class="snapshot-card">
+            <span class="snapshot-label">Matched skills</span>
+            <strong>{{ matched_total }}</strong>
+            <p>Signals already aligned with the role.</p>
+        </div>
+        <div class="snapshot-card">
+            <span class="snapshot-label">Missing skills</span>
+            <strong>{{ missing_total }}</strong>
+            <p>High-value gaps that can improve the fit.</p>
+        </div>
+        <div class="snapshot-card">
+            <span class="snapshot-label">Weak areas</span>
+            <strong>{{ weak_areas|length }}</strong>
+            <p>Sections that need clearer evidence or stronger language.</p>
+        </div>
+        <div class="snapshot-card">
+            <span class="snapshot-label">Resume skills found</span>
+            <strong>{{ resume_total }}</strong>
+            <p>Total technical, soft-skill, and certification signals extracted.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="panel-card skill-panel h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip">Aligned</span>
+                        <h3>Matched skills</h3>
+                    </div>
+                </div>
+
+                {% if matched_skills.get('technical_skills') %}
+                <div class="skill-group">
+                    <h6>Technical</h6>
+                    <div>
+                        {% for skill in matched_skills['technical_skills'] %}
+                        <span class="skill-tag matched">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if matched_skills.get('soft_skills') %}
+                <div class="skill-group">
+                    <h6>Soft skills</h6>
+                    <div>
+                        {% for skill in matched_skills['soft_skills'] %}
+                        <span class="skill-tag matched">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if matched_skills.get('certifications') %}
+                <div class="skill-group">
+                    <h6>Certifications</h6>
+                    <div>
+                        {% for cert in matched_skills['certifications'] %}
+                        <span class="skill-tag matched">{{ cert }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if not matched_total %}
+                <div class="empty-state compact-empty">
+                    <i class="bi bi-search"></i>
+                    <h4>No direct overlap found</h4>
+                    <p>Try tailoring project summaries and role language to surface stronger alignment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel-card skill-panel h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip warning-chip">Gaps</span>
+                        <h3>Missing skills</h3>
+                    </div>
+                </div>
+
+                {% if missing_skills.get('technical_skills') %}
+                <div class="skill-group">
+                    <h6>Technical</h6>
+                    <div>
+                        {% for skill in missing_skills['technical_skills'] %}
+                        <span class="skill-tag missing">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if missing_skills.get('soft_skills') %}
+                <div class="skill-group">
+                    <h6>Soft skills</h6>
+                    <div>
+                        {% for skill in missing_skills['soft_skills'] %}
+                        <span class="skill-tag missing">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if missing_skills.get('certifications') %}
+                <div class="skill-group">
+                    <h6>Certifications</h6>
+                    <div>
+                        {% for cert in missing_skills['certifications'] %}
+                        <span class="skill-tag missing">{{ cert }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if not missing_total %}
+                <div class="empty-state compact-empty success-empty">
+                    <i class="bi bi-check2-circle"></i>
+                    <h4>No major skill gaps</h4>
+                    <p>This resume already aligns very closely with the requested skills.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if weak_areas or ats_feedback.get('checks') %}
+    <div class="row g-4 mb-4">
+        {% if weak_areas %}
+        <div class="col-lg-5">
+            <div class="panel-card h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip">Attention areas</span>
+                        <h3>Weak areas</h3>
+                    </div>
+                </div>
+
+                <div class="stack-list">
+                    {% for wa in weak_areas %}
+                    <div class="weak-area-item">
+                        <span class="severity-badge {{ wa.severity }}">{{ wa.severity }}</span>
+                        <div>
+                            <strong>{{ wa.area }}</strong>
+                            <p>{{ wa.message }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if ats_feedback.get('checks') %}
+        <div class="{% if weak_areas %}col-lg-7{% else %}col-12{% endif %}">
+            <div class="panel-card h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip">ATS checks</span>
+                        <h3>Detailed ATS analysis</h3>
+                    </div>
+                </div>
+
+                <div class="stack-list">
+                    {% for check in ats_feedback['checks'] %}
+                    <div class="ats-check {{ check.status }}">
+                        <span class="check-icon">
+                            {% if check.status == 'pass' %}
+                            <i class="bi bi-check-circle-fill"></i>
+                            {% elif check.status == 'warn' %}
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% else %}
+                            <i class="bi bi-x-circle-fill"></i>
+                            {% endif %}
+                        </span>
+                        <div class="flex-grow-1">
+                            <strong>{{ check.check }}</strong>
+                            <p>{{ check.message }}</p>
+                        </div>
+                        <span class="score-pill neutral-pill">{{ check.points }} pts</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="panel-card h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip">Suggestions</span>
+                        <h3>Improvement ideas</h3>
+                    </div>
+                </div>
+
+                {% if recommendations.get('improvement_suggestions') %}
+                <div class="stack-list">
+                    {% for suggestion in recommendations.get('improvement_suggestions', []) %}
+                    <div class="suggestion-item">
+                        <i class="bi bi-arrow-up-right-circle"></i>
+                        <span>{{ suggestion }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state compact-empty">
+                    <i class="bi bi-lightbulb"></i>
+                    <h4>No additional suggestions</h4>
+                    <p>This report did not generate extra improvement notes for the current comparison.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel-card h-100">
+                <div class="section-header">
+                    <div>
+                        <span class="metric-chip">Roadmap</span>
+                        <h3>Learning roadmap</h3>
+                    </div>
+                </div>
+
+                {% if recommendations.get('learning_path') %}
+                <div class="stack-list">
+                    {% for step in recommendations.get('learning_path', []) %}
+                    <div class="learning-path-step">
+                        <div class="step-number">{{ step.step }}</div>
+                        <div>
+                            <strong>{{ step.action }}</strong>
+                            <p>{{ step.timeframe }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state compact-empty">
+                    <i class="bi bi-signpost-split"></i>
+                    <h4>No roadmap generated</h4>
+                    <p>Run another comparison with a more specific role description for a fuller roadmap.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if recommendations.get('course_recommendations') %}
+    <div class="panel-card mb-4">
+        <div class="section-header">
+            <div>
+                <span class="metric-chip">Learning resources</span>
+                <h3>Recommended courses</h3>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            {% for rec in recommendations['course_recommendations'][:6] %}
+            <div class="col-md-6 col-xl-4">
+                <div class="rec-card h-100">
+                    <span class="skill-tag missing">{{ rec.skill }}</span>
+                    <div class="course-stack">
+                        {% for course in rec.courses %}
+                        <div class="course-item">
+                            {% if course is mapping %}
+                            <a href="{{ course.url }}" target="_blank" rel="noopener noreferrer" class="course-link">{{ course.name }}</a>
+                            <small>{{ course.platform }}</small>
+                            {% else %}
+                            <span>{{ course }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if recommendations.get('ats_tips') %}
+    <div class="panel-card mb-4">
+        <div class="section-header">
+            <div>
+                <span class="metric-chip">ATS polish</span>
+                <h3>ATS optimization tips</h3>
+            </div>
+        </div>
+
+        <div class="tips-grid">
+            {% for tip in recommendations.get('ats_tips', []) %}
+            <div class="tip-item">
+                <i class="bi bi-check2-square"></i>
+                <span>{{ tip }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="panel-card mb-4">
+        <div class="section-header">
+            <div>
+                <span class="metric-chip">Source skills</span>
+                <h3>All skills found in your resume</h3>
+            </div>
+        </div>
+
+        {% if resume_skills.get('technical_skills') %}
+        <div class="skill-group">
+            <h6>Technical skills ({{ resume_skills['technical_skills']|length }})</h6>
+            <div>
+                {% for skill in resume_skills['technical_skills'] %}
+                <span class="skill-tag resume">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if resume_skills.get('soft_skills') %}
+        <div class="skill-group">
+            <h6>Soft skills ({{ resume_skills['soft_skills']|length }})</h6>
+            <div>
+                {% for skill in resume_skills['soft_skills'] %}
+                <span class="skill-tag resume">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if resume_skills.get('certifications') %}
+        <div class="skill-group">
+            <h6>Certifications ({{ resume_skills['certifications']|length }})</h6>
+            <div>
+                {% for cert in resume_skills['certifications'] %}
+                <span class="skill-tag resume">{{ cert }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not resume_total %}
+        <div class="empty-state compact-empty">
+            <i class="bi bi-file-earmark-text"></i>
+            <h4>No skills extracted</h4>
+            <p>The parser could not confidently identify skills from this resume content.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="action-strip no-print">
+        <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">Analyze Another Resume</a>
+        <a href="{{ url_for('history') }}" class="btn btn-outline-light">Open History</a>
+    </div>
+</div>
+{% endblock %}

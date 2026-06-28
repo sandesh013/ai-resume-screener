@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Resume Match Analyzer{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <section class="page-hero page-hero-compact">
+        <div class="page-hero-copy">
+            <span class="eyebrow">Personal command center</span>
+            <h1>{{ current_user.full_name or current_user.username }}, keep tightening your next application.</h1>
+            <p>
+                Watch score trends, review previous analyses, and move from rough draft to stronger match with less guesswork.
+            </p>
+        </div>
+        <div class="page-hero-side panel-card">
+            <span class="metric-chip">Quick snapshot</span>
+            <h3>{% if total %}{{ total }} analyses tracked{% else %}No analyses yet{% endif %}</h3>
+            <p>
+                {% if total %}
+                Your best compatibility score so far is <strong>{{ best_score }}%</strong>. Run another comparison to keep improving your benchmark.
+                {% else %}
+                Upload a resume and target role to generate your first score, gap report, and ATS feedback summary.
+                {% endif %}
+            </p>
+            <div class="hero-actions">
+                <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    New Analysis
+                </a>
+                <a href="{{ url_for('history') }}" class="btn btn-outline-light">Open History</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon stat-teal"><i class="bi bi-stack"></i></div>
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">Total analyses</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon stat-coral"><i class="bi bi-bullseye"></i></div>
+                <div class="stat-value">{{ avg_score }}%</div>
+                <div class="stat-label">Average compatibility</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon stat-gold"><i class="bi bi-file-earmark-check"></i></div>
+                <div class="stat-value">{{ avg_ats }}%</div>
+                <div class="stat-label">Average ATS score</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon stat-slate"><i class="bi bi-trophy"></i></div>
+                <div class="stat-value">{{ best_score }}%</div>
+                <div class="stat-label">Best score</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="panel-card chart-panel h-100">
+                <div class="panel-head">
+                    <div>
+                        <span class="metric-chip">Trendline</span>
+                        <h3>Compatibility over time</h3>
+                    </div>
+                    <p>Use the last few runs to see whether your revisions are improving the match.</p>
+                </div>
+
+                {% if total %}
+                <div class="chart-wrap">
+                    <canvas id="trendChart" data-labels='{{ trend_labels|safe }}' data-scores='{{ trend_scores|safe }}'></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state compact-empty">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <h4>Trend data will appear here</h4>
+                    <p>Your chart starts building as soon as you complete your first resume analysis.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-card quick-panel h-100">
+                <div class="panel-head">
+                    <div>
+                        <span class="metric-chip">Next move</span>
+                        <h3>Use the dashboard as your review loop</h3>
+                    </div>
+                </div>
+
+                <div class="insight-list">
+                    <div class="insight-item">
+                        <i class="bi bi-check2-circle"></i>
+                        <div>
+                            <strong>Focus on the delta</strong>
+                            <p>Compare your best score against your latest run to see what changed.</p>
+                        </div>
+                    </div>
+                    <div class="insight-item">
+                        <i class="bi bi-lightning-charge"></i>
+                        <div>
+                            <strong>Prioritize missing skills</strong>
+                            <p>Fix a few high-signal gaps first instead of rewriting the entire resume.</p>
+                        </div>
+                    </div>
+                    <div class="insight-item">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>Keep ATS clean</strong>
+                            <p>Formatting and keyword coverage matter just as much as the headline score.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if analyses %}
+                <div class="quick-summary">
+                    <span class="metric-chip subtle-chip">Most recent</span>
+                    <h4>{{ analyses[0].job_description.title }}</h4>
+                    <p>
+                        {{ analyses[0].compatibility_score }}% compatibility
+                        {% if analyses[0].ats_score %} and {{ analyses[0].ats_score }}% ATS score{% endif %}.
+                    </p>
+                    <a href="{{ url_for('results', analysis_id=analyses[0].id) }}" class="btn btn-gradient-primary w-100">Review Latest Result</a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary w-100">Start First Analysis</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-card">
+        <div class="panel-head table-head">
+            <div>
+                <span class="metric-chip">Recent work</span>
+                <h3>Latest analyses</h3>
+            </div>
+            {% if total > 5 %}
+            <a href="{{ url_for('history') }}" class="btn btn-outline-light btn-sm">View All</a>
+            {% endif %}
+        </div>
+
+        {% if analyses %}
+        <div class="table-responsive table-dark-custom">
+            <table class="table analysis-table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Resume</th>
+                        <th>Role</th>
+                        <th>Compatibility</th>
+                        <th>ATS</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in analyses %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ a.resume.filename|truncate(28) }}</td>
+                        <td>
+                            <strong>{{ a.job_description.title|truncate(32) }}</strong>
+                            {% if a.job_description.company %}
+                            <div class="table-subtext">{{ a.job_description.company }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="score-pill {% if a.compatibility_score >= 70 %}pill-good{% elif a.compatibility_score >= 40 %}pill-mid{% else %}pill-low{% endif %}">
+                                {{ a.compatibility_score }}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score-pill {% if a.ats_score and a.ats_score >= 70 %}pill-good{% elif a.ats_score and a.ats_score >= 40 %}pill-mid{% else %}pill-low{% endif %}">
+                                {{ a.ats_score or 'N/A' }}{% if a.ats_score %}%{% endif %}
+                            </span>
+                        </td>
+                        <td class="table-subtext">{{ a.analyzed_at.strftime('%d %b %Y, %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('results', analysis_id=a.id) }}" class="btn btn-gradient-primary btn-sm">Open</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h4>No analyses yet</h4>
+            <p>Start with a resume and a target job description to unlock score trends and recommendations.</p>
+            <a href="{{ url_for('upload') }}" class="btn btn-gradient-primary">Create First Analysis</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
